@@ -1,0 +1,22 @@
+this is buggy and hacky as all heck
+
+what I wanted was to generate a 3d mesh of a selected brain area from a stack of labeled brain atlas images
+
+Steps:
+1) take eps files of a brain atlas
+2) find location of a selected area label within each eps file
+3) render eps file to bitmap format
+4) find pixels that correspond to the border of the selected area
+5) map image to brain coordinates
+6) output 3d brain coordinates for border of selected area at each slice
+7) use meshlab to generate mesh from points
+
+this is terribly hacky and relied on:
+1) a pre-defined bounding box that I manually put in each eps file
+2) only using sections with a simple pixel -> brain coordinate mapping
+3) manually generating the mesh using ball-pivoting in meshlab
+
+what I would really like is to
+1) automatically find bounding box
+2) make a more flexible mapping for all atlas slices
+3) automatically generate mesh
