@@ -3,7 +3,7 @@
 import optparse
 import os
 import re
-import sys
+#import sys
 import logging
 
 import numpy as np
@@ -14,7 +14,7 @@ import mahotas
 #from convexhull import convex_hull
 
 # AP coordinates with P = -
-bounds = {   70: -4.36,
+bounds = {70: -4.36,
     71: -4.56,
     72: -4.68,
     73: -4.80,
@@ -58,38 +58,41 @@ logging.basicConfig(level=logging.DEBUG)
 parser = optparse.OptionParser()
 parser.add_option("-i", "--sectionIndex", default=71, type='int')
 parser.add_option("-a", "--area", default="TeA")
-parser.add_option("-t", "--tmpfile", default="tmp/tmp.eps") # handle this better
+# handle this better
+parser.add_option("-t", "--tmpfile", default="tmp/tmp.eps")
 
-(options,args) = parser.parse_args()
+(options, args) = parser.parse_args()
 
 if options.sectionIndex >= 103:
     raise NotImplemented("I haven't worked out the -1 mm DV shift yet")
 
 #inFilename = 'eps/071.eps'
 inFilename = 'eps/%03i.eps' % options.sectionIndex
-tmpFilename = options.tmpfile#'tmp.eps'
+tmpFilename = options.tmpfile  # 'tmp.eps'
 tmpDir = os.path.dirname(tmpFilename)
-area = options.area#'TeA'
-gridx = (-8,8) # left, right: ML
-gridy = (0,-11) # top, bottom: DV
+area = options.area  # 'TeA'
+gridx = (-8, 8)  # left, right: ML
+gridy = (0, -11)  # top, bottom: DV
 gridh = gridy[0] - gridy[1]
 gridw = gridx[1] - gridx[0]
 
+
 # bounding box is lower left and upper right
-# 1 -1 scale 0 -1008 translate: this flips y (so + is down) then puts origin at 0, -1008 so upper left?
-def im_to_skull(x,y,gridx,gridy,bb):
+# 1 -1 scale 0 -1008 translate:
+# this flips y (so + is down) then puts origin at 0, -1008 so upper left?
+def im_to_skull(x, y, gridx, gridy, bb):
     bbw = bb[2] - bb[0]
     bbh = bb[3] - bb[1]
     hs = gridw / float(bbw)
     vs = gridh / float(bbh)
     cy = y - (1008 - bb[3])
-    sx = (x-bb[0]) * hs + gridx[0]
-    sy = gridy[0] - cy*vs
+    sx = (x - bb[0]) * hs + gridx[0]
+    sy = gridy[0] - cy * vs
     return sx, sy
 
-tf = open(tmpFilename,'w')
+tf = open(tmpFilename, 'w')
 logging.debug("Processing %i for %s" % (options.sectionIndex, area))
-with open(inFilename,'rU') as inFile:
+with open(inFilename, 'rU') as inFile:
     # find location of labels
     prevLine = ""
     locs = []
@@ -120,7 +123,7 @@ with open(inFilename,'rU') as inFile:
                 try:
                     x = float(tokens[0])
                     y = float(tokens[1])
-                    locs.append((x,y))
+                    locs.append((x, y))
                 except Exception as E:
                     logging.error("Error converting tokens to floats")
                     logging.error(str(E))
@@ -144,7 +147,7 @@ tf.close()
 logging.debug("Converting temporary file to png")
 imFilename = "%s.png" % os.path.splitext(tmpFilename)[0]
 cmd = "convert %s -geometry %ix%i %s" %\
-        (tmpFilename, int(gridw*100), int(gridh*100), imFilename)
+        (tmpFilename, int(gridw * 100), int(gridh * 100), imFilename)
 logging.debug("\tCommand:%s" % cmd)
 p = os.popen(cmd)
 logging.debug("Conversion output: %s" % p.read())
@@ -154,44 +157,45 @@ logging.debug("Found %s at locations %s" % (area, str(locs)))
 slocs = []
 imxys = []
 for loc in locs:
-    sloc = im_to_skull(loc[0],loc[1],gridx,gridy,bb)
+    sloc = im_to_skull(loc[0], loc[1], gridx, gridy, bb)
     logging.debug("Image to Skull: %s to %s" % (str(loc), str(sloc)))
     slocs.append(sloc)
     # convert skull to labeled image coordinates
-    imxys.append([sloc[0]* 100 + int(gridw*100) / 2.,sloc[1] * -100.])
+    imxys.append([sloc[0] * 100 + int(gridw * 100) / 2., sloc[1] * -100.])
     logging.debug("Labeled Image coordinate: %s" % str(imxys[-1]))
 
 logging.debug("Labeling image: %s" % imFilename)
 im = pl.imread(imFilename).astype(np.uint8)
 lim, nr = scipy.ndimage.label(im)
-np.save("%s/labeled.npy" % tmpDir, lim) # save for later
+np.save("%s/labeled.npy" % tmpDir, lim)  # save for later
 pl.imsave("%s/labeled.png" % tmpDir, lim, cmap=pl.cm.gray)
 
 areaLocations = []
 labels = []
 tim = np.zeros_like(lim)
 for xy in imxys:
-    label = lim[int(xy[1]),int(xy[0])]
+    label = lim[int(xy[1]), int(xy[0])]
     labels.append(label)
     bim = (lim == label)
     pim = mahotas.bwperim(bim)
     tim |= pim
     imlocs = np.array(np.where(pim)).astype(np.float64)
-    imlocs[1] = (800 - imlocs[1])/100.
-    imlocs[0] = imlocs[0]/-100.
+    imlocs[1] = (800 - imlocs[1]) / 100.
+    imlocs[0] = imlocs[0] / -100.
     areaLocations.append(imlocs)
 if len(areaLocations) != 0:
     areaLocations = np.hstack(areaLocations)
 elif area == 'All':
     #labels = [lim[0,0], lim[-1,0], lim[0,-1], lim[-1,-1]]
-    labels = [lim[0,0], lim[-1,0], lim[0,-1], lim[-1,-1]]
+    labels = [lim[0, 0], lim[-1, 0], lim[0, -1], lim[-1, -1]]
     logging.debug("All labels: %s" % str(labels))
-    bim = (lim != labels[0]) | (lim != labels[1]) | (lim != labels[2]) | (lim != labels[3])
+    bim = (lim != labels[0]) | (lim != labels[1]) | \
+            (lim != labels[2]) | (lim != labels[3])
     pim = mahotas.bwperim(bim)
     tim |= pim
     imlocs = np.array(np.where(pim)).astype(np.float64)
-    imlocs[1] = (800 - imlocs[1])/100.
-    imlocs[0] = imlocs[0]/-100.
+    imlocs[1] = (800 - imlocs[1]) / 100.
+    imlocs[0] = imlocs[0] / -100.
     areaLocations = imlocs
 else:
     raise ValueError("Unable to find any points for area: %s" % area)
@@ -203,10 +207,12 @@ pl.imsave('%s/areas.png' % tmpDir, tim, cmap=pl.cm.gray)
 #pl.show()
 #if False:
 #    logging.debug("Finding hull")
-#    hull = convex_hull(areaLocations) 
-#    skull = np.hstack((hull.T,np.ones((hull.shape[1],1))*bounds[options.sectionIndex]))
+#    hull = convex_hull(areaLocations)
+#    skull = np.hstack((hull.T,np.ones((hull.shape[1],1)) \
+#        *bounds[options.sectionIndex]))
 
-skull = np.hstack((areaLocations.T,np.ones((areaLocations.shape[1],1))*bounds[options.sectionIndex]))
+skull = np.hstack((areaLocations.T, np.ones((areaLocations.shape[1], 1)) \
+        * bounds[options.sectionIndex]))
 
 logging.debug("Saving")
 np.savetxt("points/%s_%03i.asc" % (options.area, options.sectionIndex), skull)
