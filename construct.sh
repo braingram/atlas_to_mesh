@@ -4,7 +4,7 @@ if [ $1 ]
 then
     AREAS=$1
 else
-    AREAS="V2L AuD Au1 AuV PRh V1B V1M TeA"
+    AREAS="All V2L AuD Au1 AuV PRh V1B V1M TeA Ect"
 fi
 
 echo "Processing $AREAS"

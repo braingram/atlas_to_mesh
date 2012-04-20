@@ -20,3 +20,17 @@ what I would really like is to
 1) automatically find bounding box
 2) make a more flexible mapping for all atlas slices
 3) automatically generate mesh
+
+Meshlab
+-------
+1) load in a points file for an area (ex: V1.asc)
+2) simplify the points:
+    Filter -> Cleaning -> Merge: ~.05 world units
+3) save as mesh (ex: .ply)
+4) reload
+3) mesh the points:
+    Filter -> Remeshing -> Surface Reconstruction (ball pivoting): ~.5 world units (or .7 for V2L)
+5) close holes
+5) smooth:
+    Filter -> Smoothing -> Laplace Smooth: 2 iterations
+6) save as mesh (ex: .ply)
