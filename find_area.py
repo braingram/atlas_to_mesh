@@ -63,8 +63,10 @@ parser.add_option("-t", "--tmpfile", default="tmp/tmp.eps")
 
 (options, args) = parser.parse_args()
 
+dvshift = 0
 if options.sectionIndex >= 103:
-    raise NotImplemented("I haven't worked out the -1 mm DV shift yet")
+    dvshift = -1
+#    raise NotImplemented("I haven't worked out the -1 mm DV shift yet")
 
 #inFilename = 'eps/071.eps'
 inFilename = 'eps/%03i.eps' % options.sectionIndex
@@ -72,7 +74,8 @@ tmpFilename = options.tmpfile  # 'tmp.eps'
 tmpDir = os.path.dirname(tmpFilename)
 area = options.area  # 'TeA'
 gridx = (-8, 8)  # left, right: ML
-gridy = (0, -11)  # top, bottom: DV
+#gridy = (0, -11)  # top, bottom: DV
+gridy = (dvshift, dvshift - 11)
 gridh = gridy[0] - gridy[1]
 gridw = gridx[1] - gridx[0]
 
@@ -89,6 +92,12 @@ def im_to_skull(x, y, gridx, gridy, bb):
     sx = (x - bb[0]) * hs + gridx[0]
     sy = gridy[0] - cy * vs
     return sx, sy
+
+
+def skull_to_lim(sx, sy):
+    ix = sx * 100 + int(gridw * 100) / 2.
+    iy = (sy - dvshift) * -100
+    return ix, iy
 
 tf = open(tmpFilename, 'w')
 logging.debug("Processing %i for %s" % (options.sectionIndex, area))
@@ -161,7 +170,8 @@ for loc in locs:
     logging.debug("Image to Skull: %s to %s" % (str(loc), str(sloc)))
     slocs.append(sloc)
     # convert skull to labeled image coordinates
-    imxys.append([sloc[0] * 100 + int(gridw * 100) / 2., sloc[1] * -100.])
+    imxys.append(list(skull_to_lim(sloc[0], sloc[1])))
+    #imxys.append([sloc[0] * 100 + int(gridw * 100) / 2., sloc[1] * -100.])
     logging.debug("Labeled Image coordinate: %s" % str(imxys[-1]))
 
 logging.debug("Labeling image: %s" % imFilename)
@@ -173,15 +183,18 @@ pl.imsave("%s/labeled.png" % tmpDir, lim, cmap=pl.cm.gray)
 areaLocations = []
 labels = []
 tim = np.zeros_like(lim)
+index = 0
 for xy in imxys:
     label = lim[int(xy[1]), int(xy[0])]
     labels.append(label)
     bim = (lim == label)
+    pl.imsave("%s/%i_bim.png" % (tmpDir, index), bim, cmap=pl.cm.gray)
+    index += 1
     pim = mahotas.bwperim(bim)
     tim |= pim
     imlocs = np.array(np.where(pim)).astype(np.float64)
     imlocs[1] = (800 - imlocs[1]) / 100.
-    imlocs[0] = imlocs[0] / -100.
+    imlocs[0] = imlocs[0] / -100. + dvshift
     areaLocations.append(imlocs)
 if len(areaLocations) != 0:
     areaLocations = np.hstack(areaLocations)
@@ -195,7 +208,7 @@ elif area == 'All':
     tim |= pim
     imlocs = np.array(np.where(pim)).astype(np.float64)
     imlocs[1] = (800 - imlocs[1]) / 100.
-    imlocs[0] = imlocs[0] / -100.
+    imlocs[0] = imlocs[0] / -100. + dvshift
     areaLocations = imlocs
 else:
     raise ValueError("Unable to find any points for area: %s" % area)
