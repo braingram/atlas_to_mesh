@@ -15,5 +15,6 @@ do
     do
         python find_area.py -i $SI -a $AREA
     done
-    cat points/$AREA_* > points/$AREA.asc
+    sync
+    cat points/$AREA\_* > points/$AREA.asc
 done
