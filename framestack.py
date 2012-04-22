@@ -93,8 +93,15 @@ def test_framestack():
         ('ytran', Rect(1, 1, -2, -2))]
     f = FrameStack([i[0] for i in nfs], [i[1] for i in nfs])
 
-    #TODO tests here
+    #TODO more tests here
 
-    f.get_matrix('unit', '2x')
-    f.get_matrix('2x', 'unit')
+    # one step
+    assert(f.convert(0, 0, 'unit', '2x') == (0., 0.))
+    assert(f.convert(1, 1, 'unit', '2x') == (2., 2.))
+    # and back
+    assert(f.convert(0, 0, '2x', 'unit') == (0., 0.))
+    assert(f.convert(2, 2, '2x', 'unit') == (1., 1.))
+
+    # two steps
+    # and back
     return f
