@@ -33,12 +33,12 @@ def get_grid_rect(index):
     assert(index > 0)
     assert(index < 162)
     if index > 102:
-        return Rect(-8, -1, 16, -11)
+        return Rect(-8, 1, 8, 12)
     if index > 11:
-        return Rect(-8, 0, 16, -11)
+        return Rect(-8, 0, 8, 11)
     if index > 5:
-        return Rect(-7, 0, 14, -10)
-    return Rect(-5, -1, 10, -8)
+        return Rect(-7, 0, 7, 10)
+    return Rect(-5, 1, 5, 9)
     #gridx = (-8, 8)
     #dv = get_dv_shift(index)
     #gridy = (dv, dv - 11)
@@ -48,17 +48,14 @@ def get_grid_rect(index):
 
 
 def get_bounding_rect(index):
-    x, y, w, h = get_bounding_box(index)
-    w -= x
-    ty = y
-    y = 1008 - h
-    h = 1008 - ty
-    h -= y
     # eps coordinates are 0,0 = lower left
     # atlas files use a translated and scaled version
     #   1 -1 scale 0 -1008 translate
     # however this is AFTER the bounding box
-    return Rect(x, y, w, h)
+    bb = get_bounding_box(index)
+    y0 = 1008 - bb.y1
+    y1 = 1008 - bb.y0
+    return Rect(bb.x0, y0, bb.x1, y1)
 
 
 def get_bounding_box(index):
@@ -77,7 +74,9 @@ def get_bounding_box(index):
 
 def get_png_rect(index, scale):
     grid = get_grid_rect(index)
-    return Rect(0, 0, abs(grid.w * scale), abs(grid.h * scale))
+    w = (grid.x1 - grid.x0) * scale
+    h = (grid.y1 - grid.y0) * scale
+    return Rect(0, 0, w, h)
 
 
 class Section(object):
