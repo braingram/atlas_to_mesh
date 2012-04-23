@@ -131,16 +131,17 @@ class Section(object):
                     temp_file.write(l)
 
                 # find areas
-                for area in self.areas.keys():
-                    if area_in_line(area, l):
-                        try:
-                            x, y = find_label_on_line(area, prev_line)
-                            self.areas[area].append(Point(x, y, 'eps'))
-                        except Exception as E:
-                            logging.error("Section[%s]: Line[%s] contained "
-                            "area[%s], prev_line[%s] did not parse to "
-                            "location[%s]" % (self.index, l, area, \
-                                    prev_line, E))
+                if l[0] != r"%":
+                    for area in self.areas.keys():
+                        if area_in_line(area, l):
+                            try:
+                                x, y = find_label_on_line(area, prev_line)
+                                self.areas[area].append(Point(x, y, 'eps'))
+                            except Exception as E:
+                                logging.error("Section[%s]: Line[%s] contained"
+                                " area[%s], prev_line[%s] did not parse to "
+                                "location[%s]" % (self.index, l, area, \
+                                        prev_line, E))
 
                 if r"mm) sh" in l:
                     self.ap = parse_ap(l)
