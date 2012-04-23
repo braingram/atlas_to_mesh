@@ -48,12 +48,31 @@ def get_grid_rect(index):
 
 
 def get_bounding_rect(index):
+    x, y, w, h = get_bounding_box(index)
+    w -= x
+    ty = y
+    y = 1008 - h
+    h = 1008 - ty
+    h -= y
+    # eps coordinates are 0,0 = lower left
+    # atlas files use a translated and scaled version
+    #   1 -1 scale 0 -1008 translate
+    # however this is AFTER the bounding box
+    return Rect(x, y, w, h)
+
+
+def get_bounding_box(index):
+    """
+    llx, lly, urx, ury
+    """
     assert(type(index) == int)
     assert(index > 0)
     assert(index < 162)
     if index > 11:
         return Rect(86, 296, 994, 921)
     raise NotImplementedError("No bounding box for sections < 12")
+    #r = get_bounding_rect(index)
+    #return r.x, r.y, r.w - r.x, r.h - r.y
 
 
 def get_png_rect(index, scale):
@@ -73,6 +92,8 @@ class Section(object):
         for area in areas:
             self.areas[area] = []
 
+        self.epsdir = indir
+        self.tmpdir = tmpdir
         self.process_eps_file(indir, tmpdir)
         self.setup_frames()
 
@@ -80,7 +101,7 @@ class Section(object):
         """
         get tag locations and bounding box
         """
-        bb = get_bounding_rect(self.index)
+        bb = get_bounding_box(self.index)
         input_fn = "%s/%03i.eps" % (epsdir, self.index)
         temp_fn = "%s/%03i.eps" % (tmpdir, self.index)
         #temp_file = open("%s
@@ -92,6 +113,7 @@ class Section(object):
                 if ' dsh' in l:  # remove dashed lines
                     temp_file.write('[] 0 dsh\r')
                 elif r'%%HiResBoundingBox:' in l:  # this fubars imagemagick
+                    prev_line = l
                     pass
                 elif re.match(\
                     r"^\d\.*\d*\s+\d\.*\d*\s+\d\.*\d*\s+\d\.*\d*\s+cmyk", l):
@@ -104,31 +126,22 @@ class Section(object):
                     temp_file.write( \
                             r"%%BoundingBox: " + "%i %i %i %i\r" % tuple(bb))
                 else:
-                    # possibly overwrite bounding box to 0 0 1080 1008
                     temp_file.write(l)
 
                 # find areas
                 for area in self.areas.keys():
                     if area_in_line(area, l):
-                        x, y = find_area(prev_line)
-                        self.areas[area].append(Point(x, y, 'eps'))
+                        try:
+                            x, y = find_area(area, prev_line)
+                            self.areas[area].append(Point(x, y, 'eps'))
+                        except Exception as E:
+                            logging.error("Section[%s]: Line[%s] contained "
+                            "area[%s], prev_line[%s] did not parse to "
+                            "location[%s]" % (self.index, l, area, \
+                                    prev_line, E))
 
                 if r"mm) sh" in l:
                     self.ap = parse_ap(l)
-                # find bounding box
-                #if r"%%BoundingBox:" in l:
-                #    # possibly overwrite bounding box to 0 0 1080 1008
-                #    tokens = l.split()
-                #    try:
-                #        blx = float(tokens[1])
-                #        bly = float(tokens[2])
-                #        bux = float(tokens[3])
-                #        buy = float(tokens[4])
-                #        self.eps_bb = [blx, bly, bux, buy]
-                #    except Exception as E:
-                #        logging.error("Error converting tokens to floats")
-                #        logging.error(str(E))
-                #        logging.error("Tokens: %s" % str(tokens))
                 prev_line = l
         _, _, pw, ph = get_png_rect(self.index, self.scale)
         self.png_filename = convert_eps(temp_fn, pw, ph)
@@ -148,13 +161,60 @@ class Section(object):
         png = get_png_rect(self.index, self.scale)
         skull = get_grid_rect(self.index)
         self.frame_stack = framestack.FrameStack(\
-                ('eps', 'png', 'skulll'),
+                ('eps', 'png', 'skull'),
                 (eps, png, skull))
+
+    def search_for_area(self, area):
+        self.areas[area] = []
+        temp_fn = "%s/%03i.eps" % (self.tmpdir, self.index)
+        with open(temp_fn, 'rU') as temp_file:
+            prev_line = ""
+            for l in temp_file:
+                for area in self.areas.keys():
+                    if area_in_line(area, l):
+                        try:
+                            x, y = find_area(area, prev_line)
+                            self.areas[area].append(Point(x, y, 'eps'))
+                        except Exception as E:
+                            logging.error("Section[%s]: Line[%s] contained "
+                            "area[%s], prev_line[%s] did not parse to "
+                            "location[%s]" % (self.index, l, area, \
+                                    prev_line, E))
+                prev_line = l
+
+    def find_area(self, area, frame):
+        if area not in self.areas:
+            self.search_for_area(area)
+        pts = self.areas[area]  # pts (in eps)
+        npts = []
+        for pt in pts:
+            npt = self.frame_stack.convert(pt.x, pt.y, pt.frame, frame)
+            npts.append(Point(npt[0], npt[1], frame))
+        return npts
+
+    def show(self):
+        # show labeled image
+        pylab.imshow(self.labeled)
+        for area in self.areas.keys():
+            pts = self.find_area(area, 'png')
+            spts = self.find_area(area, 'skull')
+            xys = numpy.array([[pt.x, pt.y] for pt in pts])
+            if len(xys):
+                pylab.scatter(xys[:, 0], xys[:, 1], c='k')
+                for (pt, spt) in zip(pts, spts):
+                    l = "%s:[%.2f, %.2f, %.2f]" % (area, spt.x, spt.y, self.ap)
+                    pylab.text(pt.x, pt.y, l)
+            #rpts = [Point(86, 87, 'eps'), Point(994, 87, 'eps'),
+            #        Point(994, 712, 'eps'), Point(86, 712, 'eps')]
+            #for (i, pt) in enumerate(rpts):
+            #    x, y = self.frame_stack.convert(pt.x, pt.y, pt.frame, 'png')
+            #    pylab.scatter(x, y, c='k')
+            #    pylab.text(x, y, 'Test:%i' % i)
 
 
 def parse_ap(line):
     try:
-        ap = int(line.split('(')[1].strip().split()[0])
+        ap = float(line.split('(')[1].strip().split()[0])
         logging.debug("Parsed AP[%s] from %s" % (ap, line))
         return ap
     except Exception as E:
@@ -181,6 +241,7 @@ def find_area(area, line):
             logging.error("Error[%s] parsing area[%s] line[%s]" % \
                     (E, area, line))
             logging.error("\tTokens: %s" % tokens)
+            raise E
 
 
 def convert_eps(filename, width, height):
