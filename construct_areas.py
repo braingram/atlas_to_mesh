@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import pickle
 import sys
 
 import pylab
@@ -10,26 +11,31 @@ import section
 
 def construct_areas(sindexes, areas, epsdir='eps/', tmpdir='tmp/', \
         ptsdir='pts/'):
-    sections = [section.load(si, areas=areas, indir=epsdir, tmpdir=tmpdir) \
+    sections = [section.load(si, areas=areas, epsdir=epsdir, tmpdir=tmpdir) \
             for si in sindexes]
+    pts = {}
     for area in areas:
-        pts = []
+        pts[area] = []
         for s in sections:
-            pts += s.find_area(area, 'skull')
-        #points.save_pts(pts, area, odir=ptsdir)
+            pts[area] += s.find_area(area, 'skull')
+
+    with open('areas.p', 'w') as ofile:
+        pickle.dump(pts, ofile)
 
 
 def show_sections(sindexes, areas, epsdir='eps/', tmpdir='tmp/'):
     for si in sindexes:
         pylab.figure()
-        s = section.load(si, areas=areas, indir=epsdir, tmpdir=tmpdir)
+        s = section.load(si, areas=areas, epsdir=epsdir, tmpdir=tmpdir)
         s.show()
         pylab.show()
 
 
 if __name__ == '__main__':
     areas = ['V2L', 'AuD', 'Au1', 'AuV', 'PRh', 'V1B', 'V1M', 'TeA', 'Ect']
-    si = 71
+    # skip 22, 47, 76, 144, 148
+    sis = [i for i in range(12, 162) if not (i in [22, 47, 76, 144, 148])]
     if len(sys.argv) > 1:
-        si = int(sys.argv[1])
-    show_sections([si], areas=areas)
+        sis = [int(sys.argv[1])]
+    #show_sections(sis, areas=areas, epsdir='/home/graham/Desktop/eps/')
+    construct_areas(sis, areas=areas, epsdir='/home/graham/Desktop/eps/')

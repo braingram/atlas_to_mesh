@@ -12,8 +12,15 @@ import scipy.ndimage
 import framestack
 from framestack import Rect, Point
 
+import vision
+
 # max index = 161 (last coronal section)
 # bounding box is good up till there
+
+# messed up sections
+#  w/bad eps parsing:
+#   22, 47, 76, 144, 148
+#  : 022 (bad eps parsing)
 
 bounds = {70: -4.36, 71: -4.56, 72: -4.68, 73: -4.80, 74: -4.92, 75: -5.04,
     76: -5.20, 77: -5.28, 78: -5.40, 79: -5.52, 80: -5.64, 81: -5.76,
@@ -22,10 +29,6 @@ bounds = {70: -4.36, 71: -4.56, 72: -4.68, 73: -4.80, 74: -4.92, 75: -5.04,
     94: -7.32, 95: -7.44, 96: -7.56, 97: -7.68, 98: -7.80, 99: -7.92,
     100: -8.04, 101: -8.16, 102: -8.28, 103: -8.40, 104: -8.52, 105: -8.64,
     106: -8.76, 107: -8.88}
-
-
-#Point = collections.namedtuple('Point', 'x y frame')
-#Rect = collections.namedtuple('Rect', 'x y w h')
 
 
 def get_grid_rect(index):
@@ -80,7 +83,7 @@ def get_png_rect(index, scale):
 
 
 class Section(object):
-    def __init__(self, index, areas=None, indir='eps/', tmpdir='tmp/'):
+    def __init__(self, index, areas=None, epsdir='eps/', tmpdir='tmp/'):
         self.scale = 100  # pixels per eps unit
         self.index = index
         self.ap = None  # bounds[index]: check this later
@@ -91,9 +94,9 @@ class Section(object):
         for area in areas:
             self.areas[area] = []
 
-        self.epsdir = indir
+        self.epsdir = epsdir
         self.tmpdir = tmpdir
-        self.process_eps_file(indir, tmpdir)
+        self.process_eps_file(epsdir, tmpdir)
         self.setup_frames()
 
     def process_eps_file(self, epsdir, tmpdir='tmp/'):
@@ -131,7 +134,7 @@ class Section(object):
                 for area in self.areas.keys():
                     if area_in_line(area, l):
                         try:
-                            x, y = find_area(area, prev_line)
+                            x, y = find_label_on_line(area, prev_line)
                             self.areas[area].append(Point(x, y, 'eps'))
                         except Exception as E:
                             logging.error("Section[%s]: Line[%s] contained "
@@ -172,7 +175,7 @@ class Section(object):
                 for area in self.areas.keys():
                     if area_in_line(area, l):
                         try:
-                            x, y = find_area(area, prev_line)
+                            x, y = find_label_on_line(area, prev_line)
                             self.areas[area].append(Point(x, y, 'eps'))
                         except Exception as E:
                             logging.error("Section[%s]: Line[%s] contained "
@@ -181,7 +184,7 @@ class Section(object):
                                     prev_line, E))
                 prev_line = l
 
-    def find_area(self, area, frame):
+    def find_label(self, area, frame):
         if area not in self.areas:
             self.search_for_area(area)
         pts = self.areas[area]  # pts (in eps)
@@ -191,12 +194,22 @@ class Section(object):
             npts.append(Point(npt[0], npt[1], frame))
         return npts
 
+    def find_area(self, area, frame):
+        labels = self.find_label(area, 'png')
+        pts = vision.find_area(self.labeled, labels)
+        rpts = []
+        for pt in pts:
+            npt = self.frame_stack.convert(pt[0], pt[1], 'png', frame)
+            rpts.append(Point(npt[0], npt[1], frame))
+        return rpts
+
     def show(self):
         # show labeled image
         pylab.imshow(self.labeled)
+        pylab.title("Section %03i AP:%.3f" % (self.index, self.ap))
         for area in self.areas.keys():
-            pts = self.find_area(area, 'png')
-            spts = self.find_area(area, 'skull')
+            pts = self.find_label(area, 'png')
+            spts = self.find_label(area, 'skull')
             xys = numpy.array([[pt.x, pt.y] for pt in pts])
             if len(xys):
                 pylab.scatter(xys[:, 0], xys[:, 1], c='k')
@@ -229,7 +242,7 @@ def area_in_line(area, line):
     return False
 
 
-def find_area(area, line):
+def find_label_on_line(area, line):
     tokens = line.split()
     if (len(tokens) == 3) and (tokens[2].strip().lower() == 'mov'):
         try:
@@ -259,5 +272,5 @@ def label_image(filename):
     return lim
 
 
-def load(index, areas=None, indir='eps/', tmpdir='tmp/'):
-    return Section(index, areas=areas, indir=indir, tmpdir=tmpdir)
+def load(index, areas=None, epsdir='eps/', tmpdir='tmp/'):
+    return Section(index, areas=areas, epsdir=epsdir, tmpdir=tmpdir)
