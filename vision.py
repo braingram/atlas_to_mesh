@@ -2,46 +2,43 @@
 
 import numpy
 import pylab
+import scikits.learn.decomposition
 import scipy.ndimage
 
 import mahotas
 
 
-def sdist(x0, y0, x1, y1):
-    return (x0 - x1) ** 2. + (y0 - y1) ** 2.
+import quadfit
 
 
-def dist(x0, y0, x1, y1):
-    return numpy.sqrt(sdist(x0, y0, x1, y1))
+def find_points(labeled, seed):
+    label = labeled[int(seed.y), int(seed.x)]
+    bim = (labeled == label)
+    #pim = mahotas.bwperim(bim)
+    pts = numpy.array(numpy.where(bim)).astype(numpy.float64)
+    if len(pts):
+        return pts.T[:, ::-1]
+    else:
+        return []
 
 
-def find_closest(pts, mx, my):
-    mi = 0
-    mv = sdist(pts[0][0], pts[0][1], mx, my)
-    for (i, p) in enumerate(pts):
-        d = sdist(p[0], p[1], mx, my)
-        if d < mv:
-            mi = i
-            mv = d
-    return mi, pts[mi][0], pts[mi][1]
+def find_corners(labeled, seed):
+    pca, pts = pca_transform(labeled, seed, points=True)
+    impts = []
+    for pt in quadfit.find_box(pts):
+        print pt
+        impts.append(pca.inverse_transform(pt))
+        print impts[-1]
+    return tuple(impts)
 
 
-def guess_start(pts, width, height):
-    mx = width / 2.
-    my = height / 2.
-
-    # find point closest to center : probably a corner?
-    i, x, y = find_closest(pts, mx, my)
-    return i, x, y
-
-
-def vectorize(labeled, seeds):
-    pts = find_perimeter(labeled, seeds)
-
-    # fit 2 curves and 2 straight lines
-    height, width = labeled.shape[:2]
-    start = guess_start(pts, width, height)
-    return start
+def pca_transform(labeled, seed, points=False):
+    pca = scikits.learn.decomposition.PCA()
+    pts = find_points(labeled, seed)
+    pca.fit(pts)
+    if points:
+        return pca, pca.transform(pts)
+    return pca
 
 
 def find_area(labeled, seeds):
