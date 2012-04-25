@@ -11,9 +11,12 @@ import mahotas
 import quadfit
 
 
+def to_binary(labeled, seed):
+    return (labeled == labeled[int(seed.y), int(seed.x)])
+
+
 def find_points(labeled, seed):
-    label = labeled[int(seed.y), int(seed.x)]
-    bim = (labeled == label)
+    bim = to_binary(labeled, seed)
     #pim = mahotas.bwperim(bim)
     pts = numpy.array(numpy.where(bim)).astype(numpy.float64)
     if len(pts):
@@ -51,8 +54,7 @@ def find_perimeter(labeled, seeds):
     """
     rpts = None
     for seed in seeds:
-        label = labeled[int(seed.y), int(seed.x)]
-        bim = (labeled == label)
+        bim = to_binary(labeled, seed)
         pim = mahotas.bwperim(bim)
         pts = numpy.array(numpy.where(pim)).astype(numpy.float64)
         if len(pts):
