@@ -8,7 +8,20 @@ import pylab
 import section
 
 
-def construct_areas(sindexes, areas, epsdir='eps/', tmpdir='tmp/', \
+default_indices = [i for i in range(12, 162) \
+        if not (i in [22, 47, 76, 144, 148])]
+
+
+def get_points(area, sections=None):
+    if sections is None:
+        sections = [section.load(si, areas=[area]) for si in default_indices]
+    pts = []
+    for s in sections:
+        pts += [[p.x, p.y, s.get_ap()] for p in s.find_area(area, 'skull')]
+    return pts
+
+
+def construct_areas(sindexes, areas, epsdir=None, tmpdir=None, \
         ptsdir='pts/'):
     sections = [section.load(si, areas=areas, epsdir=epsdir, tmpdir=tmpdir) \
             for si in sindexes]
@@ -21,7 +34,7 @@ def construct_areas(sindexes, areas, epsdir='eps/', tmpdir='tmp/', \
     return pts
 
 
-def show_sections(sindexes, areas, epsdir='eps/', tmpdir='tmp/'):
+def show_sections(sindexes, areas, epsdir=None, tmpdir=None):
     for si in sindexes:
         pylab.figure()
         s = section.load(si, areas=areas, epsdir=epsdir, tmpdir=tmpdir)
@@ -39,6 +52,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 2:
         areas = [sys.argv[2]]
     #show_sections(sis, areas=areas, epsdir='/home/graham/Desktop/eps/')
-    pts = construct_areas(sis, areas=areas, epsdir='atlas/eps/')
+    pts = construct_areas(sis, areas=areas, epsdir=None)
     with open('areas.p', 'w') as ofile:
         pickle.dump(pts, ofile)
