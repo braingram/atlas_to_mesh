@@ -1,3 +1,50 @@
+A python interface to the rat brain atlas
+
+Purpose
+-------
+Using the rat brain atlas...
+1) construct 3d point clouds of various brain regions
+2) lookup the area for a given location (ML, DV, AP coordinate)
+3) grab the containing section image for a given location
+4) plot a location on a flattened cortical surface
+
+
+Installation details
+--------------------
+Due to copyright reasons, this module does not contain the eps files
+from the cd that comes with the rat brain atlas. These files are 
+however required for the module to function.
+
+You can either pass in the path of the eps files to the necessary
+functions (such as Section.__init__) or copy the eps files
+(of at least the coronal sections) to atlas/eps.
+
+How to
+------
+
+get the section index for the containing section
+>>> pyatlas.py section 6.5 3.5 -7
+
+plot a location on a section (show and save the plot)
+>>> pyatlas.py section 6.5 3.5 -7 -ps
+
+get the area for a location
+>>> pyatlas.py area 6.5 3.5 -7
+
+get a point cloud of an area (saved to meshes/<area>.asc) [takes a while]
+>>> pyatlas.py points V2L -m
+
+plot a location on a flattened cortex
+>>> pyatlas.py cortex 6.5 3.5 -7 -ps
+
+Several calls to plot on a flattened cortical surface will go much faster
+if the area points are recomputed like so
+>>> pyatlas.py area -p area.p
+>>> pyatals.py cortex <ML> <DV> <AP> -A area.p
+
+
+Notes
+-----
 this is buggy and hacky as all heck
 
 what I wanted was to generate a 3d mesh of a selected brain area from a stack of labeled brain atlas images
@@ -12,12 +59,9 @@ Steps:
 7) use meshlab to generate mesh from points
 
 this is terribly hacky and relied on:
-1) a pre-defined bounding box that I manually put in each eps file
-2) only using sections with a simple pixel -> brain coordinate mapping
 3) manually generating the mesh using ball-pivoting in meshlab
 
 what I would really like is to
-1) automatically find bounding box
 2) make a more flexible mapping for all atlas slices
 3) automatically generate mesh
 

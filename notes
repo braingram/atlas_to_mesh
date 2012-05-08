@@ -1,0 +1,7 @@
+for area calculation just used the labeled image
+    if not in area, find closest
+
+for cortical unwrapping, do pca on data, use 'y' component of pca?
+    pca will need to be 'registered'
+        flipped and rotated to the right orientation
+    pca works best with All points, not just perimeter
