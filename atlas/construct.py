@@ -40,7 +40,7 @@ def get_points(areas, sections=None):
             pts[area] += [[p.x, p.y, s.get_ap()] for p \
                     in s.find_area(area, 'skull')]
     if len(areas) == 1:
-        return pts[area[0]]
+        return pts[areas[0]]
     return pts
 
 
