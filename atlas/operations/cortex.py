@@ -1,14 +1,22 @@
 #!/usr/bin/env python
 
 import optparse
+import cPickle as pickle
 
-from .. import section
+import numpy
+import pylab
+
+from .. import construct
+from .. import cylinder
+#from .. import section
 
 
 def parse(args):
     parser = optparse.OptionParser()
     parser.add_option('-a', '--areas', help="areas to plot",
             default='V2L AuD Au1 AuV PRh V1B V1M Ect TeA')
+    parser.add_option('-A', '--areapts', help="pickled area points",
+            default=None)
     parser.add_option('-o', '--output', help="output filename",
             default="cortex.png")
     parser.add_option('-p', '--plot', help="generate plot",
@@ -19,20 +27,57 @@ def parse(args):
     parser.add_option('-y', '--cylindery',
             help="cylinder center dv coordinate (+dorsal)",
             default=6, type="float")
+    parser.add_option('-s', '--show', help="show",
+            default=False, action="store_true")
     return parser.parse_args(args)
 
 
 def run(args):
-    options, args = parse(args)
+    #pyatlas cortex <location> areas
+    assert len(args) > 2, "Must supply 3 location coordinates: %s" % args
+    ml, dv, ap = [float(a) for a in args[:3]]
 
-    assert len(args) == 3, "Must supply 3 location coordinates: %s" % args
+    options, args = parse(args[3:])
+
     areas = options.areas.split()
-    assert len(areas) > 0, "No areas supplied"
+    #assert len(areas) > 0, "No areas supplied"
 
-    ml, dv, ap = [float(a) for a in args]
-
-    # get closest section
-    cs = section.get_closest_section(ap, areas=areas)
+    # project point into cylinder
+    ct, cr = cylinder.project(ml, dv, options.cylinderx, options.cylindery)
+    cy = ap
+    print ct, cr, cy
 
     # project on cortex
-    raise NotImplementedError
+    if options.plot:
+        # plot areas
+        if len(areas):
+            # try to load area points
+            if options.areapts is not None:
+                try:
+                    apts = pickle.load(open(options.areapts, 'r'))
+                except:
+                    print >> "failed to load area points from: %s" % \
+                            options.areapts
+                    options.areapts = None
+            if options.areapts is None:
+                apts = construct.get_points(areas)
+            for area in areas:
+                pts = numpy.array(apts[area])
+                if ml > 0:
+                    pts = pts[pts[:, 0] > 0]
+                else:
+                    pts = pts[pts[:, 0] < 0]
+                cylinder.plot_area_points(pts, \
+                        options.cylinderx, options.cylindery, \
+                        label=area, alpha=0.1)
+
+        # plot location
+        pylab.scatter(cy, ct)
+
+        if len(areas):
+            pylab.legend()
+        fn = options.output
+
+        pylab.savefig(fn)
+        if options.show:
+            pylab.show()

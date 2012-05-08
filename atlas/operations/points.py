@@ -2,6 +2,7 @@
 
 import optparse
 import os
+import cPickle as pickle
 
 import numpy
 
@@ -11,7 +12,7 @@ from .. import section
 
 def parse(args):
     parser = optparse.OptionParser()
-    parser.add_option('-o', '--output', help="output file/directory",
+    parser.add_option('-o', '--output', help="output directory",
             default=None)
     parser.add_option('-m', '--mesh',
             help="generate mesh (.asc) files in output directory",
@@ -19,24 +20,36 @@ def parse(args):
     parser.add_option('-s', '--sections',
             help="section indices to parse (space separated)",
             default=None)
+    parser.add_option('-p', '--pickle',
+            help="create a pickle file (named this) with the points",
+            default=None)
     return parser.parse_args(args)
 
 
 def run(args):
     options, args = parse(args)
 
-    assert len(args) > 0, "Must supply at least 1 area"
+    if len(args) == 0:
+        args = section.default_areas
     areas = args
 
     if options.sections is None:
-        options.sections = [i for i in range(12, 162) \
-                if not (i in [22, 47, 76, 144, 148])]
+        options.sections = construct.default_indices
 
     sections = [section.load(si, areas=areas) for si in options.sections]
-    pts = {}
-    for area in areas:
-        pts[area] = construct.get_points(area, sections=sections)
+    pts = construct.get_points(areas, sections=sections)
 
+    # pickle points?
+    if options.pickle is not None:
+        fn = options.pickle
+        if options.output is not None:
+            if not os.path.exists(options.output):
+                os.makedirs(options.output)
+            fn = os.path.join(options.output, fn)
+        with open(fn, 'w') as F:
+            pickle.dump(pts, F)
+
+    # make mesh?
     if options.mesh:
         outdir = options.output
         if outdir is None:
@@ -46,7 +59,9 @@ def run(args):
         for area in areas:
             fn = os.path.join(outdir, area) + '.asc'
             numpy.savetxt(fn, pts[area])
-    else:
+
+    # or else spit out points
+    if (not options.mesh) and (options.pickle is None):
         for area in areas:
             for pt in pts[area]:
                 print pt
