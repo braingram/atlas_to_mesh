@@ -3,8 +3,8 @@
 
 import sys
 
-import atlas
-import atlas.operations
+import brainatlas
+import brainatlas.operations
 
 
 # I want this to
@@ -23,4 +23,4 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print "usage: pyatlas <operation> [args/options]"
         sys.exit(1)
-    atlas.operations.run(sys.argv[1], sys.argv[2:])
+    brainatlas.operations.run(sys.argv[1], sys.argv[2:])
