@@ -1,0 +1,5 @@
+mahotas>=0.8
+matplotlib>=1.1.1rc
+numpy>=1.6.1
+scikits.learn>=0.8.1
+scipy>=0.9.0

@@ -12,6 +12,10 @@ default_indices = [i for i in range(12, 162) \
         if not (i in [22, 47, 76, 144, 148])]
 
 
+def load_points(filename):
+    return pickle.load(open(filename, 'r'))
+
+
 def get_points(areas, sections=None):
     """
     Parameters
@@ -31,6 +35,9 @@ def get_points(areas, sections=None):
     """
     if isinstance(areas, str):
         areas = [areas]
+        was_string = True
+    else:
+        was_string = False
     if sections is None:
         sections = [section.load(si, areas=areas) for si in default_indices]
     pts = {}
@@ -39,7 +46,7 @@ def get_points(areas, sections=None):
         for s in sections:
             pts[area] += [[p.x, p.y, s.get_ap()] for p \
                     in s.find_area(area, 'skull')]
-    if len(areas) == 1:
+    if was_string:
         return pts[areas[0]]
     return pts
 

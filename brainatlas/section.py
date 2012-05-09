@@ -105,7 +105,7 @@ def get_png_rect(index, scale):
 
 def get_eps_dir(epsdir=None):
     if epsdir is None:
-        return os.path.join(os.path.dirname(__file__), 'eps')
+        return os.path.join(os.path.expanduser('~'), '.atlas', 'eps')
 
 
 def get_tmp_dir(tmpdir=None):

@@ -17,30 +17,30 @@ however required for the module to function.
 
 You can either pass in the path of the eps files to the necessary
 functions (such as Section.__init__) or copy the eps files
-(of at least the coronal sections) to atlas/eps.
+(of at least the coronal sections) to ~/.atlas/eps.
 
 How to
 ------
 
 get the section index for the containing section
->>> pyatlas.py section 6.5 3.5 -7
+>>> atlas.py section 6.5 3.5 -7
 
 plot a location on a section (show and save the plot)
->>> pyatlas.py section 6.5 3.5 -7 -ps
+>>> atlas.py section 6.5 3.5 -7 -ps
 
 get the area for a location
->>> pyatlas.py area 6.5 3.5 -7
+>>> atlas.py area 6.5 3.5 -7
 
 get a point cloud of an area (saved to meshes/<area>.asc) [takes a while]
->>> pyatlas.py points V2L -m
+>>> atlas.py points V2L -m
 
 plot a location on a flattened cortex
->>> pyatlas.py cortex 6.5 3.5 -7 -ps
+>>> atlas.py cortex 6.5 3.5 -7 -ps
 
 Several calls to plot on a flattened cortical surface will go much faster
 if the area points are recomputed like so
->>> pyatlas.py area -p area.p
->>> pyatals.py cortex <ML> <DV> <AP> -A area.p
+>>> atlas.py area -p area.p
+>>> atlas.py cortex <ML> <DV> <AP> -A area.p
 
 
 Notes

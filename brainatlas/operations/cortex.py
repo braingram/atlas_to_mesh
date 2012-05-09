@@ -54,11 +54,12 @@ def run(args):
             # try to load area points
             if options.areapts is not None:
                 try:
-                    apts = pickle.load(open(options.areapts, 'r'))
+                    apts = construct.load_points(options.areapts)
                 except:
                     print >> "failed to load area points from: %s" % \
                             options.areapts
                     options.areapts = None
+
             if options.areapts is None:
                 apts = construct.get_points(areas)
             for area in areas:

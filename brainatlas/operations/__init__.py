@@ -12,7 +12,7 @@ __all__ = ['area', 'cortex', 'points', 'section']
 
 
 def run(operation, args):
-    oname = 'atlas.operations.%s' % operation
+    oname = 'brainatlas.operations.%s' % operation
     assert oname in sys.modules, "Unknown operation: %s" % oname
     module = sys.modules[oname]
     assert hasattr(module, 'run'), "Module does not contain run: %s" % module

@@ -14,6 +14,8 @@ def parse(args):
     parser = optparse.OptionParser()
     parser.add_option('-o', '--output', help="output directory",
             default=None)
+    parser.add_option('-A', '--areapts', help="pickled area points",
+            default=None)
     parser.add_option('-m', '--mesh',
             help="generate mesh (.asc) files in output directory",
             default=False, action="store_true")
@@ -36,8 +38,22 @@ def run(args):
     if options.sections is None:
         options.sections = construct.default_indices
 
-    sections = [section.load(si, areas=areas) for si in options.sections]
-    pts = construct.get_points(areas, sections=sections)
+    if options.areapts is not None:
+        try:
+            pts = construct.load_points(options.areapts)
+        except:
+            print >> "failed to load area points from: %s" % \
+                    options.areapts
+            options.areapts = None
+
+    if options.areapts is None:
+        sections = [section.load(si, areas=areas) for si in options.sections]
+        pts = construct.get_points(areas, sections=sections)
+
+    # check that all areas are in points
+    for area in areas:
+        if area not in pts.keys():
+            raise KeyError("area points did not contain area: %s" % area)
 
     # pickle points?
     if options.pickle is not None:

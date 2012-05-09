@@ -206,7 +206,7 @@ if debug:
 
 setuptools.setup(
     name=package_name,
-    version='1.0',
+    version='1.0.2',
     author='Brett Graham',
     author_email='braingram720@gmail.com',
     url='https://github.com/braingram/atlas_to_mesh',
