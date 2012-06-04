@@ -9,6 +9,8 @@ def parse(args):
     parser = optparse.OptionParser()
     parser.add_option('-a', '--areas', help="areas to parse",
         default='V2L AuD Au1 AuV PRh V1B V1M TeA Ect')
+    #parser.add_option('-c', '--closest', help="get closest labeled area",
+    #        default=False, action="store_true")
     return parser.parse_args(args)
 
 

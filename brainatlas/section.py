@@ -372,3 +372,19 @@ def get_closest_section(ap, mode=None, **kwargs):
             break
         index = i
     return Section(index, **kwargs)
+
+
+def get_closest_area(ml, dv, ap, area_points, full=False, restrict_ap=False):
+    loc = numpy.array([ml, dv, ap])
+    dists = {}
+    for area, pts in area_points.iteritems():
+        apts = numpy.array(pts)
+        if restrict_ap:
+            tap = apts[apts[:, 2] > ap].min()
+            apts = apts[apts[:, 2] == tap]
+        if len(apts):
+            dists[area] = numpy.sqrt(numpy.sum((apts - loc) ** 2, 1).min())
+    minarea = min(dists, key=lambda k: dists[k])
+    if full:
+        return minarea, dists
+    return minarea
