@@ -49,7 +49,7 @@ def cull_points(pts):
     return mins + maxs
 
 
-def plot_area_points(pts, cx, cy, **kwargs):
+def plot_area_points(pts, cx, cy, axes=None, **kwargs):
     """
     Project points onto the cylinder surface then plot
 
@@ -65,8 +65,27 @@ def plot_area_points(pts, cx, cy, **kwargs):
     --------
     pylab.fill
     """
-    cpts = numpy.array(cull_points( \
-            [[project(p[0], p[1], cx, cy)[0], p[2]] for p in pts]))
+    if axes is None:
+        axes = ['ap', 'ct']
+    dtype = [(k, 'f8') for k in 'ml dv ap ct cr'.split()]
+    ppts = numpy.empty(len(pts), dtype=dtype)
+    if ('ml' in axes) or ('dv' in axes) or ('ap' in axes):
+        pts = numpy.array(pts)
+    if ('ml' in axes):
+        ppts['ml'] = pts[:, 0]
+    if ('dv' in axes):
+        ppts['dv'] = pts[:, 1]
+    if ('ap' in axes):
+        ppts['ap'] = pts[:, 2]
+    if ('ct' in axes) or ('cr' in axes):
+        cpts = numpy.array([project(p[0], p[1], cx, cy) for p in pts])
+    if ('ct' in axes):
+        ppts['ct'] = cpts[:, 0]
+    if ('cr' in axes):
+        ppts['cr'] = cpts[:, 1]
+    cpts = numpy.array(cull_points(ppts[axes[::-1]]))
+    #cpts = numpy.array(cull_points( \
+    #        [[project(p[0], p[1], cx, cy)[0], p[2]] for p in pts]))
     pylab.fill(cpts[:, 0], cpts[:, 1], **kwargs)
 
 
