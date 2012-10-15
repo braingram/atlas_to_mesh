@@ -2,8 +2,8 @@
 
 import numpy
 import pylab
-import scikits.learn.decomposition
-import scipy.ndimage
+#import scikits.learn.decomposition
+#import scipy.ndimage
 
 import mahotas
 
@@ -26,6 +26,7 @@ def find_points(labeled, seed):
 
 
 def find_corners(labeled, seed):
+    raise NotImplementedError("Not working")
     pca, pts = pca_transform(labeled, seed, points=True)
     impts = []
     for pt in quadfit.find_box(pts):
@@ -36,6 +37,7 @@ def find_corners(labeled, seed):
 
 
 def pca_transform(labeled, seed, points=False):
+    raise NotImplementedError("Not working")
     pca = scikits.learn.decomposition.PCA()
     pts = find_points(labeled, seed)
     pca.fit(pts)

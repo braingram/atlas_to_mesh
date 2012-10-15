@@ -1,5 +1,5 @@
 mahotas>=0.8
 matplotlib
 numpy
-scikits.learn>=0.8.1
+#scikits.learn>=0.8.1
 scipy
