@@ -12,6 +12,7 @@ import scipy.ndimage
 import framestack
 from framestack import Rect, Point
 
+import construct
 import vision
 
 # max index = 161 (last coronal section)
@@ -50,6 +51,12 @@ bounds = {12: 2.76, 13: 2.52, 14: 2.28, 15: 2.16, 16: 2.04, 17: 1.92, 18: 1.8,
 
 
 default_areas = ['V2L', 'AuD', 'Au1', 'AuV', 'PRh', 'V1B', 'V1M', 'TeA', 'Ect']
+
+global default_area_points
+default_area_points = None
+
+global sections
+sections = {}
 
 
 def get_grid_rect(index):
@@ -121,6 +128,7 @@ class Section(object):
         self.scale = 100  # pixels per eps unit
         self.index = index
         self.ap = None  # bounds[index]: check this later
+        self._section_image = None  # for caching
 
         if areas is None:
             areas = default_areas
@@ -207,8 +215,13 @@ class Section(object):
         _, _, pw, ph = get_png_rect(self.index, self.scale)
         return convert_eps(temp_fn, pw, ph)
 
-    def get_section_image(self):
-        return pylab.imread(self.get_section_image_filename())
+    def get_section_image(self, cached=True):
+        if cached:
+            if self._section_image is None:
+                self._section_image = self.get_section_image(cached=False)
+            return self._section_image
+        else:
+            return pylab.imread(self.get_section_image_filename())
 
     def get_ap(self):
         if self.ap is None:
@@ -364,17 +377,39 @@ def load(index, areas=None, epsdir=None, tmpdir=None):
     return Section(index, areas=areas, epsdir=epsdir, tmpdir=tmpdir)
 
 
-def get_closest_section(ap, mode=None, **kwargs):
+def get_closest_section(ap, mode=None, cached=True, **kwargs):
     index = -1  # this gets the index just before the break
     for i in sorted(bounds.keys()):
         ref_ap = bounds[i]
         if ref_ap < ap:
             break
         index = i
-    return Section(index, **kwargs)
+    if cached:
+        global sections
+        if index not in sections:
+            sections[index] = Section(index, **kwargs)
+        return sections[index]
+    else:
+        return Section(index, **kwargs)
 
 
-def get_closest_area(ml, dv, ap, area_points, full=False, restrict_ap=False):
+def get_default_area_points():
+    global default_area_points
+    if default_area_points is None:
+        dfn = os.path.expanduser('~/.atlas/areas.p')
+        if os.path.exists(dfn):
+            logging.info("Loading area points from: %s" % dfn)
+            default_area_points = construct.load_points(dfn)
+        else:
+            logging.info("Constructing points for areas; %s" % default_areas)
+            default_area_points = construct.get_points(default_areas)
+    return default_area_points
+
+
+def get_closest_area(ml, dv, ap, area_points=None,
+                     full=False, restrict_ap=False):
+    if area_points is None:
+        area_points = get_default_area_points()
     loc = numpy.array([ml, dv, ap])
     dists = {}
     for area, pts in area_points.iteritems():
