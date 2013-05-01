@@ -163,16 +163,17 @@ class Section(object):
                 elif r'%%HiResBoundingBox:' in l:  # this fubars imagemagick
                     prev_line = l
                     pass
-                elif re.match(\
-                    r"^\d\.*\d*\s+\d\.*\d*\s+\d\.*\d*\s+\d\.*\d*\s+cmyk", l):
+                elif re.match(
+                        r"^\d\.*\d*\s+\d\.*\d*\s+\d\.*\d*\s+\d\.*\d*\s+cmyk",
+                        l):
                     if "1 0 0 0" in l:
                         temp_file.write("1 1 1 1 cmyk\r")
                     else:
                         temp_file.write("0 0 0 0 cmyk\r")
                 elif r"%%BoundingBox:" in l:
                     # overwrite bounding box
-                    temp_file.write( \
-                            r"%%BoundingBox: " + "%i %i %i %i\r" % tuple(bb))
+                    temp_file.write(
+                        r"%%BoundingBox: " + "%i %i %i %i\r" % tuple(bb))
                 else:
                     temp_file.write(l)
 
@@ -184,10 +185,11 @@ class Section(object):
                                 x, y = find_label_on_line(area, prev_line)
                                 self.areas[area].append(Point(x, y, 'eps'))
                             except Exception as E:
-                                logging.error("Section[%s]: Line[%s] contained"
-                                " area[%s], prev_line[%s] did not parse to "
-                                "location[%s]" % (self.index, l, area, \
-                                        prev_line, E))
+                                logging.error(
+                                    "Section[%s]: Line[%s] contained"
+                                    " area[%s], prev_line[%s] did not parse "
+                                    "to location[%s]" % (
+                                        self.index, l, area, prev_line, E))
 
                 if r"mm) sh" in l:
                     self.ap = parse_ap(l)
@@ -208,8 +210,8 @@ class Section(object):
                     pass
                 elif r"%%BoundingBox:" in l:
                     # overwrite bounding box
-                    temp_file.write( \
-                            r"%%BoundingBox: " + "%i %i %i %i\r" % tuple(bb))
+                    temp_file.write(
+                        r"%%BoundingBox: " + "%i %i %i %i\r" % tuple(bb))
                 else:
                     temp_file.write(l)
 
@@ -229,8 +231,8 @@ class Section(object):
             logging.debug("No ap found when parsing")
             return bounds[self.index]
         if (bounds.get(self.index, self.ap) != self.ap):
-            logging.error("Parsed ap[%s] != bounds ap %s" % \
-                    (self.ap, bounds[self.index]))
+            logging.error("Parsed ap[%s] != bounds ap %s" %
+                          (self.ap, bounds[self.index]))
         return self.ap
 
     def get_area_for_location(self, x, y, frame, throw=False):
@@ -269,9 +271,9 @@ class Section(object):
         eps = get_bounding_rect(self.index)
         png = get_png_rect(self.index, self.scale)
         skull = get_grid_rect(self.index)
-        self.frame_stack = framestack.FrameStack(\
-                ('eps', 'png', 'skull'),
-                (eps, png, skull))
+        self.frame_stack = framestack.FrameStack(
+            ('eps', 'png', 'skull'),
+            (eps, png, skull))
 
     def search_for_area(self, area):
         self.areas[area] = []
@@ -285,10 +287,11 @@ class Section(object):
                             x, y = find_label_on_line(area, prev_line)
                             self.areas[area].append(Point(x, y, 'eps'))
                         except Exception as E:
-                            logging.error("Section[%s]: Line[%s] contained "
-                            "area[%s], prev_line[%s] did not parse to "
-                            "location[%s]" % (self.index, l, area, \
-                                    prev_line, E))
+                            logging.error(
+                                "Section[%s]: Line[%s] contained "
+                                "area[%s], prev_line[%s] did not parse to "
+                                "location[%s]" % (self.index, l, area,
+                                                  prev_line, E))
                 prev_line = l
 
     def find_label(self, area, frame):
@@ -357,16 +360,16 @@ def find_label_on_line(area, line):
             y = float(tokens[1])
             return x, y
         except Exception as E:
-            logging.error("Error[%s] parsing area[%s] line[%s]" % \
-                    (E, area, line))
+            logging.error("Error[%s] parsing area[%s] line[%s]" %
+                          (E, area, line))
             logging.error("\tTokens: %s" % tokens)
             raise E
 
 
 def convert_eps(filename, width, height):
     ofilename = "%s.png" % os.path.splitext(filename)[0]
-    cmd = "convert %s -geometry %ix%i %s" %\
-            (filename, int(width), int(height), ofilename)
+    cmd = "convert %s -geometry %ix%i %s" % \
+        (filename, int(width), int(height), ofilename)
     logging.debug("\tCommand:%s" % cmd)
     p = os.popen(cmd)
     logging.debug("Conversion output: %s" % p.read())
