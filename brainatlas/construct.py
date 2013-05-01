@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import cPickle as pickle
+#import cPickle as pickle
 import sys
 
+import numpy
 import pylab
 
 import section
@@ -12,13 +13,16 @@ default_indices = [i for i in range(12, 162)
                    if not (i in [22, 47, 76, 144, 148])]
 
 
+pt_dtype = numpy.dtype([
+    ('ml', 'f8'), ('dv', 'f8'), ('ap', 'f8'), ('area', 'S8')])
+
+
 def load_points(filename):
-    return pickle.load(open(filename, 'r'))
+    return numpy.load(filename)
 
 
 def save_points(pts, fn):
-    with open(fn, 'w') as f:
-        pickle.dump(pts, f, 2)
+    numpy.save(fn, pts)
 
 
 def get_points(areas, sections=None):
@@ -40,20 +44,23 @@ def get_points(areas, sections=None):
     """
     if isinstance(areas, str):
         areas = [areas]
-        was_string = True
-    else:
-        was_string = False
     if sections is None:
         sections = [section.load(si, areas=areas) for si in default_indices]
-    pts = {}
+    pts = []
     for area in areas:
-        pts[area] = []
         for s in sections:
-            pts[area] += [[p.x, p.y, s.get_ap()] for p
-                          in s.find_area(area, 'skull')]
-    if was_string:
-        return pts[areas[0]]
-    return pts
+            pts.extend([(p.x, p.y, s.get_ap(), area) for p
+                        in s.find_area(area, 'skull')])
+    return numpy.array(pts, dtype=pt_dtype)
+    #pts = {}
+    #for area in areas:
+    #    pts[area] = []
+    #    for s in sections:
+    #        pts[area] += [[p.x, p.y, s.get_ap()] for p
+    #                      in s.find_area(area, 'skull')]
+    #if was_string:
+    #    return pts[areas[0]]
+    #return pts
 
 
 def construct_areas(sindexes, areas, epsdir=None, tmpdir=None,
@@ -88,5 +95,6 @@ if __name__ == '__main__':
         areas = [sys.argv[2]]
     #show_sections(sis, areas=areas, epsdir='/home/graham/Desktop/eps/')
     pts = construct_areas(sis, areas=areas, epsdir=None)
-    with open('areas.p', 'w') as ofile:
-        pickle.dump(pts, ofile)
+    save_points(pts, 'areas.npy')
+    #with open('areas.p', 'w') as ofile:
+    #    pickle.dump(pts, ofile)

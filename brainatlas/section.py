@@ -23,31 +23,32 @@ import vision
 #   22, 47, 76, 144, 148
 #  : 022 (bad eps parsing)
 bounds = {12: 2.76, 13: 2.52, 14: 2.28, 15: 2.16, 16: 2.04, 17: 1.92, 18: 1.8,
-        19: 1.68, 20: 1.56, 21: 1.44, 23: 1.2, 24: 1.08, 25: 0.96, 26: 0.84,
-        27: 0.72, 28: 0.6, 29: 0.48, 30: 0.36, 31: 0.24, 32: 0.12, 33: 0.0,
-        34: -0.12, 35: -0.24, 36: -0.36, 37: -0.48, 38: -0.6, 39: -0.72,
-        40: -0.84, 41: -0.96, 42: -1.08, 43: -1.2, 44: -1.32, 45: -1.44,
-        46: -1.56, 48: -1.8, 49: -1.92, 50: -2.04, 51: -2.16, 52: -2.28,
-        53: -2.4, 54: -2.52, 55: -2.64, 56: -2.76, 57: -2.92, 58: -3.0,
-        59: -3.12, 60: -3.24, 61: -3.36, 62: -3.48, 63: -3.6, 64: -3.72,
-        65: -3.84, 66: -3.96, 67: -4.08, 68: -4.2, 69: -4.36, 70: -4.44,
-        71: -4.56, 72: -4.68, 73: -4.8, 74: -4.92, 75: -5.04, 77: -5.28,
-        78: -5.4, 79: -5.52, 80: -5.64, 81: -5.76, 82: -5.88, 83: -6.0,
-        84: -6.12, 85: -6.24, 86: -6.36, 87: -6.48, 88: -6.6, 89: -6.72,
-        90: -6.84, 91: -6.96, 92: -7.08, 93: -7.2, 94: -7.32, 95: -7.44,
-        96: -7.56, 97: -7.68, 98: -7.8, 99: -7.92, 100: -8.04, 101: -8.16,
-        102: -8.28, 103: -8.4, 104: -8.52, 105: -8.64, 106: -8.76, 107: -8.88,
-        108: -9.0, 109: -9.12, 110: -9.24, 111: -9.36, 112: -9.48, 113: -9.6,
-        114: -9.72, 115: -9.84, 116: -9.96, 117: -10.08, 118: -10.2,
-        119: -10.32, 120: -10.44, 121: -10.56, 122: -10.68, 123: -10.8,
-        124: -10.92, 125: -11.04, 126: -11.16, 127: -11.28, 128: -11.4,
-        129: -11.52, 130: -11.64, 131: -11.76, 132: -11.88, 133: -12.0,
-        134: -12.12, 135: -12.24, 136: -12.36, 137: -12.48, 138: -12.6,
-        139: -12.72, 140: -12.84, 141: -12.96, 142: -13.08, 143: -13.2,
-        145: -13.44, 146: -13.56, 147: -13.68, 149: -13.92, 150: -14.04,
-        151: -14.16, 152: -14.28, 153: -14.4, 154: -14.52, 155: -14.64,
-        156: -14.76, 157: -15.0, 158: -15.24, 159: -15.48, 160: -15.72,
-        161: -15.96}
+          19: 1.68, 20: 1.56, 21: 1.44, 23: 1.2, 24: 1.08, 25: 0.96, 26: 0.84,
+          27: 0.72, 28: 0.6, 29: 0.48, 30: 0.36, 31: 0.24, 32: 0.12, 33: 0.0,
+          34: -0.12, 35: -0.24, 36: -0.36, 37: -0.48, 38: -0.6, 39: -0.72,
+          40: -0.84, 41: -0.96, 42: -1.08, 43: -1.2, 44: -1.32, 45: -1.44,
+          46: -1.56, 48: -1.8, 49: -1.92, 50: -2.04, 51: -2.16, 52: -2.28,
+          53: -2.4, 54: -2.52, 55: -2.64, 56: -2.76, 57: -2.92, 58: -3.0,
+          59: -3.12, 60: -3.24, 61: -3.36, 62: -3.48, 63: -3.6, 64: -3.72,
+          65: -3.84, 66: -3.96, 67: -4.08, 68: -4.2, 69: -4.36, 70: -4.44,
+          71: -4.56, 72: -4.68, 73: -4.8, 74: -4.92, 75: -5.04, 77: -5.28,
+          78: -5.4, 79: -5.52, 80: -5.64, 81: -5.76, 82: -5.88, 83: -6.0,
+          84: -6.12, 85: -6.24, 86: -6.36, 87: -6.48, 88: -6.6, 89: -6.72,
+          90: -6.84, 91: -6.96, 92: -7.08, 93: -7.2, 94: -7.32, 95: -7.44,
+          96: -7.56, 97: -7.68, 98: -7.8, 99: -7.92, 100: -8.04, 101: -8.16,
+          102: -8.28, 103: -8.4, 104: -8.52, 105: -8.64, 106: -8.76,
+          107: -8.88,
+          108: -9.0, 109: -9.12, 110: -9.24, 111: -9.36, 112: -9.48, 113: -9.6,
+          114: -9.72, 115: -9.84, 116: -9.96, 117: -10.08, 118: -10.2,
+          119: -10.32, 120: -10.44, 121: -10.56, 122: -10.68, 123: -10.8,
+          124: -10.92, 125: -11.04, 126: -11.16, 127: -11.28, 128: -11.4,
+          129: -11.52, 130: -11.64, 131: -11.76, 132: -11.88, 133: -12.0,
+          134: -12.12, 135: -12.24, 136: -12.36, 137: -12.48, 138: -12.6,
+          139: -12.72, 140: -12.84, 141: -12.96, 142: -13.08, 143: -13.2,
+          145: -13.44, 146: -13.56, 147: -13.68, 149: -13.92, 150: -14.04,
+          151: -14.16, 152: -14.28, 153: -14.4, 154: -14.52, 155: -14.64,
+          156: -14.76, 157: -15.0, 158: -15.24, 159: -15.48, 160: -15.72,
+          161: -15.96}
 
 
 default_areas = ['V2L', 'AuD', 'Au1', 'AuV', 'PRh', 'V1B', 'V1M', 'TeA', 'Ect']
@@ -403,15 +404,16 @@ def get_area_points(areas=None, generate=False, cache=False, overwrite=False):
         areas = default_areas
     global default_area_points
     if (default_area_points is None) or \
-            (sorted(areas) != sorted(default_area_points.keys())):
-        dfn = os.path.expanduser('~/.atlas/areas.p')
+            (sorted(areas) !=
+                sorted(numpy.unique(default_area_points['area']))):
+        dfn = os.path.expanduser('~/.atlas/areas.npy')
         if os.path.exists(dfn) and (not generate):
             logging.info("Loading area points from: %s" % dfn)
             apts = construct.load_points(dfn)
-            if sorted(areas) != sorted(apts.keys()):
+            if sorted(areas) != sorted(numpy.unique(apts['area'])):
                 logging.warning(
                     "Loaded areas %s did not match requested areas %s"
-                    % (apts.keys(), areas))
+                    % (numpy.unique(apts['area']), areas))
                 default_area_points = get_area_points(generate=True)
             else:
                 default_area_points = apts
@@ -429,18 +431,33 @@ def get_closest_area(ml, dv, ap, area_points=None, full=False,
                      distance=False, restrict_ap=False):
     if area_points is None:
         area_points = get_area_points()
-    loc = numpy.array([ml, dv, ap])
-    dists = {}
-    for area, pts in area_points.iteritems():
-        apts = numpy.array(pts)
-        if restrict_ap:
-            tap = apts[apts[:, 2] > ap].min()
-            apts = apts[apts[:, 2] == tap]
-        if len(apts):
-            dists[area] = numpy.sqrt(numpy.sum((apts - loc) ** 2, 1).min())
-    minarea = min(dists, key=lambda k: dists[k])
+    #loc = numpy.array([ml, dv, ap])
+    if restrict_ap:
+        pts = area_points[area_points['ap'] > ap]
+    else:
+        pts = area_points
+    lpts = pts[['ml', 'dv', 'ap']].view('f8').reshape((pts.size, 3))
+    pt = numpy.array([ml, dv, ap])
+    mi = (numpy.sum((lpts - pt) ** 2, 1)).argmin()
     if full:
-        return minarea, dists
+        return pts[mi]['area'], \
+            numpy.sqrt(numpy.sum((lpts[mi] - pt) ** 2.)), \
+            pts[mi]
     if distance:
-        return minarea, dists[minarea]
-    return minarea
+        return pts[mi]['area'], \
+            numpy.sqrt(numpy.sum((lpts[mi] - pt) ** 2.))
+    return pts[mi]['area']
+    #dists = {}
+    #for area, pts in area_points.iteritems():
+    #    apts = numpy.array(pts)
+    #    if restrict_ap:
+    #        tap = apts[apts[:, 2] > ap].min()
+    #        apts = apts[apts[:, 2] == tap]
+    #    if len(apts):
+    #        dists[area] = numpy.sqrt(numpy.sum((apts - loc) ** 2, 1).min())
+    #minarea = min(dists, key=lambda k: dists[k])
+    #if full:
+    #    return minarea, dists
+    #if distance:
+    #    return minarea, dists[minarea]
+    #return minarea
