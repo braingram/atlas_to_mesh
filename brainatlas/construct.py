@@ -16,6 +16,11 @@ def load_points(filename):
     return pickle.load(open(filename, 'r'))
 
 
+def save_points(pts, fn):
+    with open(fn, 'w') as f:
+        pickle.dump(pts, f, 2)
+
+
 def get_points(areas, sections=None):
     """
     Parameters

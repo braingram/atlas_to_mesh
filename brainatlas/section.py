@@ -232,16 +232,21 @@ class Section(object):
                     (self.ap, bounds[self.index]))
         return self.ap
 
-    def get_area_for_location(self, x, y, frame):
+    def get_area_for_location(self, x, y, frame, throw=False):
         lx, ly = self.frame_stack.convert(x, y, frame, 'png')
+        h, w = self.labeled.shape
+        if (lx >= w) or (lx < 0) or (ly >= h) or (ly < 0):
+            return ['', ]
         label = self.labeled[int(ly), int(lx)]
         if label in self.label_to_area:
             return self.label_to_area[label]
         else:
             self.make_label_area_mapping()
             if label not in self.label_to_area:
-                raise ValueError("Unknown label %s at %i %i" % \
-                        (label, int(lx), int(ly)))
+                if throw:
+                    raise ValueError("Unknown label %s at %i %i" %
+                                     (label, int(lx), int(ly)))
+                return ['', ]
             else:
                 return self.label_to_area[label]
 
@@ -393,23 +398,37 @@ def get_closest_section(ap, mode=None, cached=True, **kwargs):
         return Section(index, **kwargs)
 
 
-def get_default_area_points():
+def get_area_points(areas=None, generate=False, cache=False, overwrite=False):
+    if areas is None:
+        areas = default_areas
     global default_area_points
-    if default_area_points is None:
+    if (default_area_points is None) or \
+            (sorted(areas) != sorted(default_area_points.keys())):
         dfn = os.path.expanduser('~/.atlas/areas.p')
-        if os.path.exists(dfn):
+        if os.path.exists(dfn) and (not generate):
             logging.info("Loading area points from: %s" % dfn)
-            default_area_points = construct.load_points(dfn)
+            apts = construct.load_points(dfn)
+            if sorted(areas) != sorted(apts.keys()):
+                logging.warning(
+                    "Loaded areas %s did not match requested areas %s"
+                    % (apts.keys(), areas))
+                default_area_points = get_area_points(generate=True)
+            else:
+                default_area_points = apts
+            if cache and overwrite:
+                construct.save_points(default_area_points, dfn)
         else:
-            logging.info("Constructing points for areas; %s" % default_areas)
-            default_area_points = construct.get_points(default_areas)
+            logging.info("Constructing points for areas; %s" % areas)
+            default_area_points = construct.get_points(areas)
+            if cache:
+                construct.save_points(default_area_points, dfn)
     return default_area_points
 
 
 def get_closest_area(ml, dv, ap, area_points=None,
                      full=False, restrict_ap=False):
     if area_points is None:
-        area_points = get_default_area_points()
+        area_points = get_area_points()
     loc = numpy.array([ml, dv, ap])
     dists = {}
     for area, pts in area_points.iteritems():

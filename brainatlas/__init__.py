@@ -10,9 +10,9 @@ import framestack
 def area(ml, ap, dv, closest=True, throw=False):
     cs = section.get_closest_section(ap)
     areas = cs.get_area_for_location(ml, dv, 'skull')
-    if len(areas) == 1:
+    if (len(areas) == 1) and (str(areas[0]) != ''):
         return str(areas[0])
-    elif (len(areas) == 0) and closest:
+    if ((len(areas) == 0) or (str(areas[0]) == '')) and closest:
         return section.get_closest_area(ml, dv, ap)
     if not throw:
         return ''
