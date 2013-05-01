@@ -8,8 +8,8 @@ import pylab
 import section
 
 
-default_indices = [i for i in range(12, 162) \
-        if not (i in [22, 47, 76, 144, 148])]
+default_indices = [i for i in range(12, 162)
+                   if not (i in [22, 47, 76, 144, 148])]
 
 
 def load_points(filename):
@@ -49,23 +49,23 @@ def get_points(areas, sections=None):
     for area in areas:
         pts[area] = []
         for s in sections:
-            pts[area] += [[p.x, p.y, s.get_ap()] for p \
-                    in s.find_area(area, 'skull')]
+            pts[area] += [[p.x, p.y, s.get_ap()] for p
+                          in s.find_area(area, 'skull')]
     if was_string:
         return pts[areas[0]]
     return pts
 
 
-def construct_areas(sindexes, areas, epsdir=None, tmpdir=None, \
-        ptsdir='pts/'):
-    sections = [section.load(si, areas=areas, epsdir=epsdir, tmpdir=tmpdir) \
-            for si in sindexes]
+def construct_areas(sindexes, areas, epsdir=None, tmpdir=None,
+                    ptsdir='pts/'):
+    sections = [section.load(si, areas=areas, epsdir=epsdir, tmpdir=tmpdir)
+                for si in sindexes]
     pts = {}
     for area in areas:
         pts[area] = []
         for s in sections:
-            pts[area] += [[p.x, p.y, s.get_ap()] for p in \
-                    s.find_area(area, 'skull')]
+            pts[area] += [[p.x, p.y, s.get_ap()] for p in
+                          s.find_area(area, 'skull')]
     return pts
 
 

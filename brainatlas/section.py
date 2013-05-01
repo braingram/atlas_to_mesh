@@ -425,8 +425,8 @@ def get_area_points(areas=None, generate=False, cache=False, overwrite=False):
     return default_area_points
 
 
-def get_closest_area(ml, dv, ap, area_points=None,
-                     full=False, restrict_ap=False):
+def get_closest_area(ml, dv, ap, area_points=None, full=False,
+                     distance=False, restrict_ap=False):
     if area_points is None:
         area_points = get_area_points()
     loc = numpy.array([ml, dv, ap])
@@ -441,4 +441,6 @@ def get_closest_area(ml, dv, ap, area_points=None,
     minarea = min(dists, key=lambda k: dists[k])
     if full:
         return minarea, dists
+    if distance:
+        return minarea, dists[minarea]
     return minarea
