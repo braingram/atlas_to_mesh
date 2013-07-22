@@ -49,7 +49,7 @@ def cull_points(pts):
     return mins + maxs
 
 
-def plot_area_points(pts, cx, cy, axes=None, **kwargs):
+def plot_area_points(pts, cx, cy, axes=None, invertdv=False, **kwargs):
     """
     Project points onto the cylinder surface then plot
 
@@ -72,11 +72,11 @@ def plot_area_points(pts, cx, cy, axes=None, **kwargs):
     if ('ml' in axes) or ('dv' in axes) or ('ap' in axes):
         pts = numpy.array(pts)
     if ('ml' in axes):
-        ppts['ml'] = pts[:, 0]
+        ppts['ml'] = pts['ml']
     if ('dv' in axes):
-        ppts['dv'] = pts[:, 1]
+        ppts['dv'] = pts['dv']
     if ('ap' in axes):
-        ppts['ap'] = pts[:, 2]
+        ppts['ap'] = pts['ap']
     if ('ct' in axes) or ('cr' in axes):
         cpts = numpy.array([project(p[0], p[1], cx, cy) for p in pts])
     if ('ct' in axes):
@@ -86,7 +86,12 @@ def plot_area_points(pts, cx, cy, axes=None, **kwargs):
     cpts = numpy.array(cull_points(ppts[axes[::-1]]))
     #cpts = numpy.array(cull_points( \
     #        [[project(p[0], p[1], cx, cy)[0], p[2]] for p in pts]))
-    pylab.fill(cpts[:, 0], cpts[:, 1], **kwargs)
+    if 'dv' not in axes:
+        return pylab.fill(cpts[:, 0], cpts[:, 1], **kwargs)
+    if axes[0] == 'dv':
+        return pylab.fill(-cpts[:, 0], cpts[:, 1], **kwargs)
+    if axes[1] == 'dv':
+        return pylab.fill(cpts[:, 0], -cpts[:, 1], **kwargs)
 
 
 if __name__ == '__main__':
