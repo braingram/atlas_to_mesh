@@ -69,6 +69,13 @@ def plot_area_points(pts, cx, cy, axes=None, invertdv=False, **kwargs):
         axes = ['ap', 'ct']
     dtype = [(k, 'f8') for k in 'ml dv ap ct cr'.split()]
     ppts = numpy.empty(len(pts), dtype=dtype)
+    try:
+        ct = pts['ct']
+        cr = pts['cr']
+        del ct, cr
+        has_ct_cr = True
+    except:
+        has_ct_cr = False
     if ('ml' in axes) or ('dv' in axes) or ('ap' in axes):
         pts = numpy.array(pts)
     if ('ml' in axes):
@@ -78,11 +85,17 @@ def plot_area_points(pts, cx, cy, axes=None, invertdv=False, **kwargs):
     if ('ap' in axes):
         ppts['ap'] = pts['ap']
     if ('ct' in axes) or ('cr' in axes):
-        cpts = numpy.array([project(p[0], p[1], cx, cy) for p in pts])
-    if ('ct' in axes):
-        ppts['ct'] = cpts[:, 0]
-    if ('cr' in axes):
-        ppts['cr'] = cpts[:, 1]
+        if not has_ct_cr:
+            cpts = numpy.array([project(p[0], p[1], cx, cy) for p in pts])
+            if ('ct' in axes):
+                ppts['ct'] = cpts[:, 0]
+            if ('cr' in axes):
+                ppts['cr'] = cpts[:, 1]
+        else:
+            if ('ct' in axes):
+                ppts['ct'] = pts['ct']
+            if ('cr' in axes):
+                ppts['cr'] = pts['cr']
     cpts = numpy.array(cull_points(ppts[axes[::-1]]))
     #cpts = numpy.array(cull_points( \
     #        [[project(p[0], p[1], cx, cy)[0], p[2]] for p in pts]))
