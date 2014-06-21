@@ -71,12 +71,20 @@ def plot_area_points(pts, cx, cy, axes=None, **kwargs):
     ppts = numpy.empty(len(pts), dtype=dtype)
     if ('ml' in axes) or ('dv' in axes) or ('ap' in axes):
         pts = numpy.array(pts)
-    if ('ml' in axes):
-        ppts['ml'] = pts[:, 0]
-    if ('dv' in axes):
-        ppts['dv'] = pts[:, 1]
-    if ('ap' in axes):
-        ppts['ap'] = pts[:, 2]
+    if len(pts.dtype):  # check if this is already a record array
+        if ('ml' in axes):
+            ppts['ml'] = pts['ml']
+        if ('dv' in axes):
+            ppts['dv'] = pts['dv']
+        if ('ap' in axes):
+            ppts['ap'] = pts['ap']
+    else:
+        if ('ml' in axes):
+            ppts['ml'] = pts[:, 0]
+        if ('dv' in axes):
+            ppts['dv'] = pts[:, 1]
+        if ('ap' in axes):
+            ppts['ap'] = pts[:, 2]
     if ('ct' in axes) or ('cr' in axes):
         cpts = numpy.array([project(p[0], p[1], cx, cy) for p in pts])
     if ('ct' in axes):
